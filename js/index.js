@@ -1,44 +1,76 @@
-document.addEventListener("DOMContentLoaded",() =>{
-    console.log("detailsOfUser")
-})
-
-
-
-function userDetails(){
-    document.querySelector('form').addEventListener('submit',(e) =>{
+document.addEventListener('DOMContentLoaded', () =>{
+    const form = document.querySelector("#github-form");
+    form.addEventListener('submit', (e) => {
         e.preventDefault()
+        let search = e.target.search.value
+        //console.log(search)
+        handleSearch(search)
 
-        const search = document.getElementById('search').value 
-        const details = search.replace("","")
-        console.log(details)
-    
+function handleSearch() {
+
+    fetch('https://api.github.com/search/users?q=' + search, {
+        method: 'GET',
+        header:{
+            'Content-Type': 'application/json',
+            Accept: 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify()
+    })
+    .then(res => res.json())
+    .then(data => {console.log(data)
+        document.querySelector('#user-list').innerHTML = ''
+        document.querySelector('#repos-list').innerHTML =''
+
+        data.items.forEach(user => {
+            console.log(user)
+            let userCard = document.createElement('li')
+            userCard.className = 'all-users'
+            userCard.innerHTML = `
+                <div class='content'>
+                    <h3> User: ${user.login}</h3>
+                    <p> URL: ${user.html_url}</p>
+                    <div class ='repos'>
+                    <button class='repo-button' style='margin-bottom: 25px'>
+                    Repositories
+                    </button>
+                    </div>
+                    <img src=${user.avatar_url} />
+                </div>`
+
+           document.querySelector('#user-list').appendChild(userCard)   
+
+           const repoButton = document.querySelector('.repo-button')
+           console.log(repoButton)
+           repoButton.addEventListener('click', () => {
+               fetch(user.repos_url, {
+               method: 'GET',
+               header:{
+                   'Content-Type': 'application/json',
+                   Accept: 'application/vnd.github.v3+json'
+               },
+               body: JSON.stringify()
+            })
+               .then(res => res.json())
+               .then(data => {
+
+               data.forEach(repo => {
+
+                    let repoCard = document.createElement('li')
+                    repoCard.innerHTML = `
+                    <h4> ${repo.name} </h4>
+                    <p> ${repo.html_url}</p>
+                    `
+                    document.querySelector('#repos-list').appendChild(repoCard)
+
+               })
+            })
+
+           })
 
 
-    fetch('`https://api.github.com/users/${searchInput}`')
-    .then(resp => resp.json())
-    .then(data =>{displayUser(data) user Repo(data)})
-
+    })
 
 })
 }
-
-
-function displayUser(user){
-    const one=document.createElement('one')
-
-    one.innerHTML=` <img src="${user.avatar_url}"/>
-    <h1>${user.login}</h2>
-    <a href="${user.html_url}">Check Profile</a>`
-    document.getElementById('user_list').appendChild(one)
-}
-
-function userRepo(rep){
-    fetch(rep.rep_url)
-   .then(res => res.json())
-   .then(repoData => repoData.forEach(repo => renderRepo(repo)))
-}
-function displayRepo(repos){
-    const relink=document.createElement('two')
-    relink.innerHTML=`${repos.name}`
-    document.getElementById('repo_list').appendChild(relink)
-}
+})
+})
